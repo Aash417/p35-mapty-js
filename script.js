@@ -28,7 +28,6 @@ class Workout {
     } ${this.date.getDate()}`;
   }
 }
-
 class Running extends Workout {
   type = 'running';
   constructor(coords, distance, duration, cadence) {
@@ -60,3 +59,76 @@ class Cycling extends Workout {
 
 const run1 = new Running([39, -12], 5.2, 24, 178);
 const cyc1 = new Cycling([39, -12], 27, 95, 523);
+
+class App {
+  #map;
+  #mapZoomLevel = 15;
+  #mapEvent;
+  #workout = [];
+  constructor() {
+    //   get user position
+    this._getPosition();
+
+    // get data from local storage
+    this._getLocalStorage();
+
+    form.addEventListener('submit', this._newWorkout.bind(this));
+
+    inputType.addEventListener('change', this._toggleElevationField);
+
+    containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+  }
+
+  _getPosition() {
+    if (navigator.geolocation)
+      navigator.geolocation.getCurrentPosition(
+        this._loadMap.bind(this),
+        function () {
+          alert('could not get your position.');
+        }
+      );
+    // console.log("hi");
+  }
+
+  _loadMap(position) {
+    // console.log(position);
+    const { longitude } = position.coords;
+    const { latitude } = position.coords;
+    // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
+
+    const coords = [latitude, longitude];
+    this.#map = L.map('map').setView(coords, this.#mapZoomLevel);
+    // console.log(this.#mapEvent);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
+
+    // handling clicks on map
+    this.#map.on('click', this._showForm.bind(this));
+
+    this.#workout.forEach(work => {
+      this._renderWorkoutMarker(work);
+    });
+  }
+
+  _showForm(mapE) {
+    this.#mapEvent = mapE;
+    // console.log(this.#mapEvent);
+    form.classList.remove('hidden');
+    inputDistance.focus();
+  }
+
+  _hideForm() {
+    inputDistance.value =
+      inputDuration.value =
+      inputCadence.value =
+      inputElevation.value =
+        '';
+    form.style.display = 'none';
+    form.classList.add('hidden');
+    setTimeout(() => (form.style.display = 'grid '), 1000);
+  }
+}
+const app = new App();
