@@ -265,5 +265,45 @@ class App {
 
     form.insertAdjacentHTML('afterend', html);
   }
+
+  _moveToPopup(e) {
+    const workoutEL = e.target.closest('.workout');
+    // console.log(workoutEL);
+
+    if (!workoutEL) {
+      return;
+    }
+
+    const workout = this.#workout.find(
+      work => work.id === workoutEL.dataset.id
+    );
+    console.log(workout);
+
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: { duration: 1 },
+    });
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workout', JSON.stringify(this.#workout));
+  }
+
+  _getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workout'));
+    // console.log(data);
+
+    if (!data) return;
+
+    this.#workout = data;
+    this.#workout.forEach(work => {
+      this._renderWorkout(work);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem('workout');
+    location.reload();
+  }
 }
 const app = new App();
